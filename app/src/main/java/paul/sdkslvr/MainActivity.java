@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity
         sdkView.invalidate();
     }
 
-    public void reset(View v){
+    public void reset(){
         sdkGrid.reset();
         sdkView.reset();
         solving = 0;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity
         sdkView.invalidate();
     }
 
-    public void save(View v) {
+    public void save() {
         String fileContent = "";
 
         for (int col = 0; col < 9; col++) {
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void load(View v) {
+    public void load() {
         String filename = "lastSDK.txt";
         String path = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + filename;
         File file = new File(path);
@@ -170,11 +170,11 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_new) {
-
+            reset();
         } else if (id == R.id.nav_save) {
-
+            save();
         } else if (id == R.id.nav_load) {
-
+            load();
         } else if (id == R.id.nav_camera) {
 
         } else if (id == R.id.nav_settings) {
