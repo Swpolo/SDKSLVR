@@ -19,6 +19,19 @@
         app:layout_constraintVertical_bias="0.03"
         app:layout_constraintHorizontal_bias="0.03" />
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="0dp"
+        android:onClick="openDrawer"
+        app:layout_constraintLeft_toLeftOf="@+id/sdkView"
+        app:layout_constraintRight_toRightOf="@+id/sdkView"
+        app:layout_constraintTop_toTopOf="@+id/sdkView"
+        app:srcCompat="@drawable/ic_menu" />
+
     <paul.sdkslvr.SdkView
     android:id="@+id/sdkView"
     android:layout_width="0dp"

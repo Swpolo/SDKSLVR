@@ -1,9 +1,15 @@
 package paul.sdkslvr;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -40,7 +46,7 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO AJOUTER FONCTION DETECTION GRILLE
+                detect();
             }
         });
 
@@ -57,19 +63,17 @@ public class MainActivity extends AppCompatActivity
         sdkListener();
     }
 
+    /***********************************************************************************************
+     * SDK SOLVER
+     */
+
     public void solve(View v) {
+        // TODO : make more robust. Function cannot detect if impossible to solve
         sdkView.setCellUserSet();
         sdkSolver = new SdkSolver();
         sdkGrid.setGrid(sdkView.getGrid());
         while (sdkSolver.sdkSolve() == 0) ;
         sdkView.setGrid(sdkGrid.getGrid());
-        sdkView.invalidate();
-    }
-
-    public void reset(){
-        sdkGrid.reset();
-        sdkView.reset();
-        solving = 0;
         sdkView.invalidate();
     }
 
@@ -79,7 +83,15 @@ public class MainActivity extends AppCompatActivity
         sdkView.invalidate();
     }
 
-    public void save() {
+    private void reset(){
+        sdkGrid.reset();
+        sdkView.reset();
+        solving = 0;
+        sdkView.invalidate();
+    }
+
+    private void save() {
+        // TODO : Allow player to save different files
         String fileContent = "";
 
         for (int col = 0; col < 9; col++) {
@@ -100,7 +112,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void load() {
+    private void load() {
+        // TODO : Allow player to load different files
+        // TODO : Allow player to generate random sdk
         String filename = "lastSDK.txt";
         String path = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + filename;
         File file = new File(path);
@@ -126,6 +140,7 @@ public class MainActivity extends AppCompatActivity
             sdkView.setGrid(newGrid);
             sdkView.setCellUserSet();
             sdkView.invalidate();
+
         }
         else {
             Toast toast = Toast.makeText(getApplicationContext(), "No saved SDK", Toast.LENGTH_SHORT);
@@ -133,7 +148,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void sdkListener(){
+    private void sdkListener(){
         sdkView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -146,6 +161,40 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
+    /***********************************************************************************************
+     * SDK DETECTION
+     */
+
+    static final int DETECT_SDK = 1;
+    private void detect(){
+        int hasPermissionCamera = cameraPermission();
+        int hasPermissionWrite = writeExternalStoragePermission();
+        if(hasPermissionCamera == PackageManager.PERMISSION_GRANTED && hasPermissionWrite == PackageManager.PERMISSION_GRANTED){
+            Intent sdkFinderIntent = new Intent(this, SdkFinderActivity.class);
+            //Intent sdkFinderIntent = new Intent(MainActivity.this, thirdActivity.class);
+            startActivityForResult(sdkFinderIntent, DETECT_SDK);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                Toast toast = Toast.makeText(getApplicationContext(), "SDK FOUND", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                Toast toast = Toast.makeText(getApplicationContext(), "SDK NOT FOUND", Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        }
+    }
+
+    /***********************************************************************************************
+     * DRAWER
+     */
 
     public void openDrawer(View v){
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -176,7 +225,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_load) {
             load();
         } else if (id == R.id.nav_camera) {
-
+            detect();
         } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_help ) {
@@ -188,5 +237,84 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    /***********************************************************************************************
+     * PERMISSIONS
+     */
+
+    private final int CAMERA_PERMISSION = 1;
+    private final int WRITEEXTERNAL_PERMISSION = 2;
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    detect();
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow camera for this feature", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                return;
+            }
+
+            case WRITEEXTERNAL_PERMISSION : {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    detect();
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow write external for this feature", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                return;
+            }
+        }
+    }
+
+    private int cameraPermission(){
+        int hasPermission = ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.CAMERA);
+        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
+
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.CAMERA)) {
+
+                // TODO : Ajouter un dialogue
+
+            }
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.CAMERA},
+                    1);
+            hasPermission = ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.CAMERA);
+        }
+
+        return hasPermission;
+    }
+
+    private int writeExternalStoragePermission(){
+        int hasPermission = ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
+
+            if(!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                // TODO : Ajouter un dialogue
+
+            }
+
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    1);
+
+            hasPermission = ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        return hasPermission;
     }
 }
