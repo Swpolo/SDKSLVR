@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">SDKSLVR</string>
+    <string name="contact_email">swpolo@hotmail.fr</string>
+    <string name="nav_new">New File</string>
+    <string name="nav_save">Save File</string>
+    <string name="nav_load">Load File</string>
+    <string name="nav_camera">Detect Grid</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_others">Others</string>
+    <string name="nav_help">Help</string>
+    <string name="nav_about">About</string>
+
+</resources>
