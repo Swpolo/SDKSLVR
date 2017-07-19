@@ -22,6 +22,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -61,6 +65,40 @@ public class MainActivity extends AppCompatActivity
         sdkView.setBackgroundColor(Color.WHITE);
 
         sdkListener();
+    }
+
+    /***********************************************************************************************
+     * OpenCV
+     */
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i(TAG, "OpenCV loaded successfully");
+
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+        } else {
+            Log.d(TAG, "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
     }
 
     /***********************************************************************************************
@@ -166,6 +204,8 @@ public class MainActivity extends AppCompatActivity
      * SDK DETECTION
      */
 
+    SdkOcr sdkOcr;
+    String sdkString;
     static final int DETECT_SDK = 1;
     private void detect(){
         int hasPermissionCamera = cameraPermission();
@@ -179,17 +219,24 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        Log.d(TAG, "ACTIVITY RESULT - BEGIN");
         if (requestCode == 1) {
             if(resultCode == Activity.RESULT_OK){
-                Toast toast = Toast.makeText(getApplicationContext(), "SDK FOUND", Toast.LENGTH_SHORT);
-                toast.show();
+                if(sdkOcr == null){
+                    sdkOcr = new SdkOcr();
+                    sdkOcr.setAppContext(getApplicationContext());
+                }
+                if(sdkOcr.readGrid() == 0){
+                    sdkString = sdkOcr.getResult();
+                    sdkView.setGrid(sdkString);
+                    sdkView.setCellUserSet();
+                    sdkView.invalidate();
+                }
             }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                Toast toast = Toast.makeText(getApplicationContext(), "SDK NOT FOUND", Toast.LENGTH_SHORT);
-                toast.show();
-            }
+//            if (resultCode == Activity.RESULT_CANCELED) {
+//            }
         }
+        Log.d(TAG, "ACTIVITY RESULT - END");
     }
 
     /***********************************************************************************************
@@ -255,8 +302,8 @@ public class MainActivity extends AppCompatActivity
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     detect();
                 } else {
-                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow camera for this feature", Toast.LENGTH_LONG);
-                    toast.show();
+//                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow camera for this feature", Toast.LENGTH_LONG);
+//                    toast.show();
                 }
                 return;
             }
@@ -267,8 +314,8 @@ public class MainActivity extends AppCompatActivity
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     detect();
                 } else {
-                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow write external for this feature", Toast.LENGTH_LONG);
-                    toast.show();
+//                    Toast toast = Toast.makeText(getApplicationContext(), "You must allow write external for this feature", Toast.LENGTH_LONG);
+//                    toast.show();
                 }
                 return;
             }

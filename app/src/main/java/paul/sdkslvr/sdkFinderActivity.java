@@ -20,6 +20,7 @@ import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -41,9 +42,9 @@ import static android.R.attr.path;
 public class SdkFinderActivity extends AppCompatActivity
         implements CameraBridgeViewBase.CvCameraViewListener2 {
 
-    private static final String TAG = "OCVSample::Activity";
+    private static final String TAG = "SDKSLVR : CV";
 
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private JavaCameraView mOpenCvCameraView;
     public SurfaceView.OnTouchListener mOpenCvCameraViewOnTouchListener;
 
 
@@ -71,52 +72,6 @@ public class SdkFinderActivity extends AppCompatActivity
         System.loadLibrary("opencv_java3");
     }
 
-
-
-    private int cameraPermission(){
-        int hasPermission = ContextCompat.checkSelfPermission(SdkFinderActivity.this,
-                Manifest.permission.CAMERA);
-        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
-
-            if (!ActivityCompat.shouldShowRequestPermissionRationale(SdkFinderActivity.this,
-                    Manifest.permission.CAMERA)) {
-
-                // TODO : Ajouter un dialogue
-
-            }
-            ActivityCompat.requestPermissions(SdkFinderActivity.this,
-                    new String[]{Manifest.permission.CAMERA},
-                    1);
-            hasPermission = ContextCompat.checkSelfPermission(SdkFinderActivity.this,
-                    Manifest.permission.CAMERA);
-        }
-
-        return hasPermission;
-    }
-
-    private int writeExternalStoragePermission(){
-        int hasPermission = ContextCompat.checkSelfPermission(SdkFinderActivity.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (hasPermission != PackageManager.PERMISSION_GRANTED) {
-
-            if(!ActivityCompat.shouldShowRequestPermissionRationale(SdkFinderActivity.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
-                // TODO : Ajouter un dialogue
-
-            }
-
-            ActivityCompat.requestPermissions(SdkFinderActivity.this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    1);
-
-            hasPermission = ContextCompat.checkSelfPermission(SdkFinderActivity.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-        return hasPermission;
-    }
-
-
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -124,7 +79,6 @@ public class SdkFinderActivity extends AppCompatActivity
                 case LoaderCallbackInterface.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
-                    cameraPermission();
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -138,12 +92,11 @@ public class SdkFinderActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("POLO_D", "START");
         setContentView(R.layout.sdk_finder);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.SdkFinderActivity_SurfaceView);
+        mOpenCvCameraView = (JavaCameraView) findViewById(R.id.SdkFinderActivity_SurfaceView);
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
@@ -152,6 +105,7 @@ public class SdkFinderActivity extends AppCompatActivity
 //        mOpenCvCameraView.setMaxFrameSize(1000, 1000);
 
         mOpenCvCameraView.setOnTouchListener(mOpenCvCameraViewOnTouchListener);
+
     }
 
     @Override
@@ -191,6 +145,7 @@ public class SdkFinderActivity extends AppCompatActivity
     }
 
     public void onCameraViewStarted(int width, int height) {
+        /// TODO ALLOW USING FLASHLIGHT
         // Screen sized mat
         m_lastOutput    = new Mat(height, width, CvType.CV_8UC4);
 
@@ -216,7 +171,6 @@ public class SdkFinderActivity extends AppCompatActivity
 
         sdkFound        = false;
         outputChoice    = false;
-
     }
 
     public void onCameraViewStopped() {
@@ -231,7 +185,6 @@ public class SdkFinderActivity extends AppCompatActivity
 
         m_AT_finished.release();
         m_AT_pending.release();
-
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
@@ -298,8 +251,6 @@ public class SdkFinderActivity extends AppCompatActivity
     }
 
     public boolean onClick(View v){
-        mOpenCvCameraView.enableView();
-
         if(sdkFound) {
             sdkFound = false;
         }
@@ -361,7 +312,6 @@ public class SdkFinderActivity extends AppCompatActivity
     }
 
     private void saveResult(Mat result){
-
         Bitmap bmp = null;
         try {
             bmp = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
@@ -371,7 +321,6 @@ public class SdkFinderActivity extends AppCompatActivity
         }
         catch (CvException e){Log.d("Exception",e.getMessage());}
 
-        writeExternalStoragePermission();
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root + "/sudokuSolver");
         myDir.mkdirs();

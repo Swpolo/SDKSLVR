@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,9 +18,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".SdkFinderActivity"
-            android:screenOrientation="landscape"
-            android:configChanges="keyboardHidden|orientation" />
-        <activity android:name=".thirdActivity"
+            android:parentActivityName=".MainActivity"
             android:screenOrientation="landscape"
             android:configChanges="keyboardHidden|orientation" />
     </application>
@@ -28,10 +27,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-feature android:name="android.hardware.camera"                    android:required="false"/>
     <uses-feature android:name="android.hardware.camera.autofocus"          android:required="false"/>
     <uses-feature android:name="android.hardware.camera.front"              android:required="false"/>
     <uses-feature android:name="android.hardware.camera.front.autofocus"    android:required="false"/>
-
+    <uses-feature android:name="android.hardware.camera.flash"              android:required="false" />
 
 </manifest>

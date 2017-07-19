@@ -1,6 +1,11 @@
 package paul.sdkslvr;
 
+import android.util.Log;
+
+
 class Grid {
+
+    private final String TAG = "SDKSLVR - GRID";
 
     private Cell[][] cells;
 

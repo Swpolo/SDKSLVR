@@ -5,8 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+
+import static android.content.ContentValues.TAG;
 
 public class SdkView extends View {
     private int focusedColumn;
@@ -235,6 +238,22 @@ public class SdkView extends View {
             }
         }
     }
+
+    void setGrid(String input) {
+        input = input.replaceAll("[^\\d]", "");
+        if(input.length() != 9*9){
+            Log.d(TAG, "INPUT TO SMALL");
+            return;
+        }
+
+        for (int column = 0; column < 9; column++) {
+            for (int row = 0; row < 9; row++) {
+                // TODO ROW AND COLUMN ARE STRING REVERTED
+                cellValue[row][column] = Character.getNumericValue(input.charAt(column * 9 + row));
+            }
+        }
+    }
+
 
     public void setCellUserSet(){
         for (int c = 0; c < 9; c++) {
